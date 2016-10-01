@@ -86,7 +86,7 @@ class Board {
     }
 
     drop(item, index) {
-        if (item) {
+        if (!this.empty(index)) {
             console.log(`@ Board drop item <${this.item_name(item)}> at ${this.index_name(index)}`);
         }
     }
@@ -106,6 +106,10 @@ class Board {
     exists(index) {
         const li = this.linear_index(index);
         return li >= 0 && li < this.size;
+    }
+
+    empty(index) {
+        return !this.take(index);
     }
 
     cell(index) {

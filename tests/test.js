@@ -4,7 +4,7 @@
  * Created by alan on 30/09/16.
  */
 
-const Board = require("./index").Board;
+const Board = require("./../index").Board;
 
 let board = new Board({ rows: 4, cols: 4 });
 

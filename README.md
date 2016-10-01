@@ -20,17 +20,21 @@ $ npm install hexane
 
 ## How works?
 
-First you need to create a board, especifing the type and
-options, example:
+First you need to create a board, especifing the options like _type_,
+example:
 
 ~~~js
 const Board = require("hexaen").Board;
 
-let board = new Board({ type: "chess", rows: 8, cols: 8 });
+let board = new Board({ type: "chess" });
 
-board.put({ row: "A", col: "1" }, "knight");
+// console.log(board.json());
 
-console.log(board.json());
+board.log();
+
+board.move("c2", "c4");
+
+board.log();
 ~~~
  
 ## Building own board
@@ -43,17 +47,29 @@ exports index system, move controller, and other things.
 ~~~js
 "use strict"
 
-// Chess Board System
-module.exports = {
-    index_system: (index) => {
-        // return a linear system for index passed on put method
-        // example: user wants do:
-        // `board.put({ row: "A", col: 1 }, "knight")`
-        // you need control index returning a linear index
-        const rows = ["A", "B", "C", "D", "E", "F"];
-        const row = rows.indexOf(index.row);
-        const col = index.col - 1;
-        return row * 8 + col;
-    }
+/**
+ * TODO: Define the next properties and methods of board
+ *
+ * Properties:
+ *
+ * board.size <integer> - size of vector of cells (required)
+ * board.default_item <any> - the default item of cells (optional - default is null)
+ *
+ * Methods:
+ *
+ * board.linear_index <function(index)> - map function receives index and return linear index of cell (required)
+ * board.can_swap <function(index_a, index_b)> - return true or false if index_a can be swaped to index_b (optional)
+ * board.can_move <function(index_a, index_b)> - return true or false if index_a can be moved to index_b (optional)
+ *
+ */
+
+module.exports = (board) => {
+    board.size = board.rows * board.cols;
+
+    board.default_item = null;
+
+    board.linear_index = (index) => {
+        return index.row * board.rows + index.col;
+    };
 };
 ~~~

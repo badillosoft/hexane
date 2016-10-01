@@ -25,6 +25,18 @@ module.exports = (board) => {
 
     board.default_item = null;
 
+    board.raw_index = (index) => {
+        const aux = index.split("");
+        const row = Number(aux[1]) - 1;
+        const col = aux[0].toLocaleLowerCase().charCodeAt(0) - "a".charCodeAt(0);
+
+        return {row, col};
+    };
+
+    board.unraw_index = (raw_index) => {
+        return board.indexOf(raw_index.row * 8 + raw_index.col);
+    };
+
     board.indexOf = (li) => {
         const a = "a".charCodeAt(0);
 
@@ -38,26 +50,24 @@ module.exports = (board) => {
     };
 
     board.linear_index = (index) => {
-        const aux = index.split("");
-        const row = Number(aux[1]) - 1;
-        const col = aux[0].toLocaleLowerCase().charCodeAt(0) - "a".charCodeAt(0);
-        return row * 8 + col;
+        const raw_index = board.raw_index(index);
+        return raw_index.row * 8 + raw_index.col;
     };
 
     board.initialize = () => {
         board.pieces = {
-            king_white: { type: "king", color: "white" },
-            king_black: { type: "king", color: "black" },
-            queen_white: { type: "queen", color: "white" },
-            queen_black: { type: "queen", color: "black" },
-            rook_white: { type: "rook", color: "white" },
-            rook_black: { type: "rook", color: "black" },
-            bishop_white: { type: "bishop", color: "white" },
-            bishop_black: { type: "bishop", color: "black" },
-            knight_white: { type: "knight", color: "white" },
-            knight_black: { type: "knight", color: "black" },
-            pawn_white: { type: "pawn", color: "white" },
-            pawn_black: { type: "pawn", color: "black" }
+            king_white: {type: "king", color: "white"},
+            king_black: {type: "king", color: "black"},
+            queen_white: {type: "queen", color: "white"},
+            queen_black: {type: "queen", color: "black"},
+            rook_white: {type: "rook", color: "white"},
+            rook_black: {type: "rook", color: "black"},
+            bishop_white: {type: "bishop", color: "white"},
+            bishop_black: {type: "bishop", color: "black"},
+            knight_white: {type: "knight", color: "white"},
+            knight_black: {type: "knight", color: "black"},
+            pawn_white: {type: "pawn", color: "white"},
+            pawn_black: {type: "pawn", color: "black"}
         };
 
         board.put("A1", board.pieces["rook_white"]);
@@ -98,7 +108,7 @@ module.exports = (board) => {
     };
 
     board.item_name = (item) => {
-        item = item || { type: "none", color: "none" };
+        item = item || {type: "none", color: "none"};
 
         const mapi = {
             "none": "·",
@@ -122,7 +132,7 @@ module.exports = (board) => {
         return ` ${name} `;
     };
 
-    board.log = () => {
+    board.log = (mute) => {
         let s = "";
 
         const mat = [];
@@ -159,8 +169,72 @@ module.exports = (board) => {
 
         s = mat.join("\n");
 
-        // console.log(s);
+        if (mute) {
+            console.log(s);
+        }
 
         return s;
+    };
+
+    board.can_move = (index_a, index_b) => {
+        const item_a = board.take(index_a);
+
+        if (!item_a) {
+            return false;
+        }
+
+        const raw_index_a = board.raw_index(index_a);
+        const raw_index_b = board.raw_index(index_b);
+
+        const diff_row = raw_index_b.row - raw_index_a.row;
+        const diff_col = raw_index_b.col - raw_index_a.col;
+
+        const next_index_white = board.unraw_index({row: raw_index_a.row + 1, col: raw_index_a.col});
+        const next_index_black = board.unraw_index({row: raw_index_a.row - 1, col: raw_index_a.col});
+
+        const next_index_white_2 = board.unraw_index({row: raw_index_a.row + 2, col: raw_index_a.col});
+        const next_index_black_2 = board.unraw_index({row: raw_index_a.row - 2, col: raw_index_a.col});
+
+        const left_index_white = board.unraw_index({row: raw_index_a.row + 1, col: raw_index_a.col - 1});
+        const left_index_black = board.unraw_index({row: raw_index_a.row - 1, col: raw_index_a.col - 1});
+
+        const right_index_white = board.unraw_index({row: raw_index_a.row + 1, col: raw_index_a.col + 1});
+        const right_index_black = board.unraw_index({row: raw_index_a.row - 1, col: raw_index_a.col + 1});
+
+        if (item_a.type === "pawn") {
+            if (item_a.color === "white") {
+                if (diff_col === 0) {
+                    if (diff_row === 1) {
+                        return board.exists(next_index_white) && board.empty(next_index_white);
+                    } else if (diff_row === 2) {
+                        return board.exists(next_index_white) && board.empty(next_index_white) &&
+                            board.exists(next_index_white_2) && board.empty(next_index_white_2);
+                    }
+                } else if (diff_row === 1) {
+                    if (diff_col === -1) {
+                        return board.exists(left_index_white) && !board.empty(left_index_white);
+                    } else if (diff_col === 1) {
+                        return board.exists(right_index_white) && !board.empty(right_index_white);
+                    }
+                }
+            } else if (item_a.color === "black") {
+                if (diff_col === 0) {
+                    if (diff_row === -1) {
+                        return board.exists(next_index_black) && board.empty(next_index_black);
+                    } else if (diff_row === -2) {
+                        return board.exists(next_index_black) && board.empty(next_index_black) &&
+                            board.exists(next_index_black_2) && board.empty(next_index_black_2);
+                    }
+                } else if (diff_row === -1) {
+                    if (diff_col === -1) {
+                        return board.exists(left_index_black) && !board.empty(left_index_black);
+                    } else if (diff_col === 1) {
+                        return board.exists(right_index_black) && !board.empty(right_index_black);
+                    }
+                }
+            }
+        }
+
+        return false;
     };
 };
