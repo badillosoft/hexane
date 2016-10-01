@@ -30,7 +30,7 @@ module.exports = (board) => {
         const row = Number(aux[1]) - 1;
         const col = aux[0].toLocaleLowerCase().charCodeAt(0) - "a".charCodeAt(0);
 
-        return {row, col};
+        return { row, col };
     };
 
     board.unraw_index = (raw_index) => {
@@ -169,7 +169,7 @@ module.exports = (board) => {
 
         s = mat.join("\n");
 
-        if (mute) {
+        if (!mute) {
             console.log(s);
         }
 
